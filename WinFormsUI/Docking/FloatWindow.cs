@@ -79,6 +79,13 @@ namespace WeifenLuo.WinFormsUI.Docking
             set	{	m_allowEndUserDocking = value;	}
         }
 
+        private bool m_allowDragTitleBar = true;
+        public bool AllowDragTitleBar
+        {
+            get { return m_allowDragTitleBar; }
+            set { m_allowDragTitleBar = value; }
+        }
+
         private bool m_doubleClickTitleBarToDock = true;
         public bool DoubleClickTitleBarToDock
         {
@@ -192,8 +199,8 @@ namespace WeifenLuo.WinFormsUI.Docking
                         if (IsDisposed)
                             return;
 
-                        uint result = Win32Helper.IsRunningOnMono ? 0 : NativeMethods.SendMessage(this.Handle, (int)Win32.Msgs.WM_NCHITTEST, 0, (uint)m.LParam);
-                        if (result == 2 && DockPanel.AllowEndUserDocking && this.AllowEndUserDocking)	// HITTEST_CAPTION
+                        uint result = Win32Helper.IsRunningOnMono ? 0 : NativeMethods.SendMessage(Handle, (int)Win32.Msgs.WM_NCHITTEST, 0, (uint)m.LParam);
+                        if (result == 2 && DockPanel.AllowEndUserDocking && AllowEndUserDocking && AllowDragTitleBar)	// HITTEST_CAPTION
                         {
                             Activate();
                             m_dockPanel.BeginDrag(this);
