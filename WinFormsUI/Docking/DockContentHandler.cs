@@ -723,8 +723,12 @@ namespace WeifenLuo.WinFormsUI.Docking
         {
             if (DockPanel != null && dockState == DockState.Document && DockPanel.DocumentStyle == DocumentStyle.SystemMdi)
                 return false;
-            else
-                return DockHelper.IsDockStateValid(dockState, DockAreas);
+            
+            IDockValid dockValid = Content as IDockValid;
+            if (dockValid != null)
+                return dockValid.IsDockStateValid(dockState);
+
+            return DockHelper.IsDockStateValid(dockState, DockAreas);
         }
 
         public ContextMenu TabPageContextMenu { get; set; }
