@@ -30,7 +30,7 @@ namespace WeifenLuo.WinFormsUI.Docking
         Control DragControl { get; }
     }
 
-    public interface IDockValid
+    public interface IDragDockValid
     {
         bool IsDockStateValid(DockState dockState);
     }

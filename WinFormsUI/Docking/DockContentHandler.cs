@@ -723,10 +723,6 @@ namespace WeifenLuo.WinFormsUI.Docking
         {
             if (DockPanel != null && dockState == DockState.Document && DockPanel.DocumentStyle == DocumentStyle.SystemMdi)
                 return false;
-            
-            IDockValid dockValid = Content as IDockValid;
-            if (dockValid != null)
-                return dockValid.IsDockStateValid(dockState);
 
             return DockHelper.IsDockStateValid(dockState, DockAreas);
         }
@@ -1124,6 +1120,15 @@ namespace WeifenLuo.WinFormsUI.Docking
         Control IDragSource.DragControl
         {
             get { return Form; }
+        }
+
+        bool IDockDragSource.IsDockStateValid(DockState dockState)
+        {
+            IDragDockValid dockValid = Content as IDragDockValid;
+            if (dockValid != null)
+                return dockValid.IsDockStateValid(dockState);
+
+            return IsDockStateValid(dockState);
         }
 
         bool IDockDragSource.CanDockTo(DockPane pane)
