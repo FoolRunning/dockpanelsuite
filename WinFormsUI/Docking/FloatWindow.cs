@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Security.Permissions;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace WeifenLuo.WinFormsUI.Docking
 {
@@ -134,18 +135,16 @@ namespace WeifenLuo.WinFormsUI.Docking
             DockPanel.FloatWindows.BringWindowToFront(this);
             base.OnActivated (e);
             // Propagate the Activated event to the visible panes content objects
-            foreach (DockPane pane in VisibleNestedPanes)
-                foreach (IDockContent content in pane.Contents)
-                    content.OnActivated(e);
+            foreach (IDockContent content in VisibleNestedPanes.SelectMany(p => p.Contents).ToList())
+                content.OnActivated(e);
         }
 
         protected override void OnDeactivate(EventArgs e)
         {
             base.OnDeactivate(e);
             // Propagate the Deactivate event to the visible panes content objects
-            foreach (DockPane pane in VisibleNestedPanes)
-                foreach (IDockContent content in pane.Contents)
-                    content.OnDeactivate(e);
+            foreach (IDockContent content in VisibleNestedPanes.SelectMany(p => p.Contents).ToList())
+                content.OnDeactivate(e);
         }
 
         protected override void OnLayout(LayoutEventArgs levent)
