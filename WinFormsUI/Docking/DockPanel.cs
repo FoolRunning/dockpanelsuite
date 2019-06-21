@@ -29,6 +29,37 @@ namespace WeifenLuo.WinFormsUI.Docking
     [SuppressMessage("Microsoft.Naming", "CA1720:AvoidTypeNamesInParameters", MessageId = "0#")]
     public delegate IDockContent DeserializeDockContent(string persistString);
 
+    /// <summary>
+    /// Deserialization handler of layout file/stream.
+    /// </summary>
+    /// <param name="persistString">Strings stored in layout file/stream.</param>
+    /// <param name="dockPanel"></param>
+    /// <param name="pane"></param>
+    /// <param name="bounds"></param>
+    /// <returns>Float window deserialized from layout/stream.</returns>
+    /// <remarks>
+    /// The deserialization handler method should handle all possible exceptions.
+    /// 
+    /// If any exception happens during deserialization and is not handled, the program might crash or experience other issues.
+    /// </remarks>
+    [SuppressMessage("Microsoft.Naming", "CA1720:AvoidTypeNamesInParameters", MessageId = "0#")]
+    public delegate FloatWindow DeserializeFloatWindow(string persistString, DockPanel dockPanel, DockPane pane, Rectangle bounds);
+
+    /// <summary>
+    /// Deserialization handler of layout file/stream.
+    /// </summary>
+    /// <param name="persistString">Strings stored in layout file/stream.</param>
+    /// <param name="visibleState"></param>
+    /// <param name="show"></param>
+    /// <returns>Dock pane deserialized from layout/stream.</returns>
+    /// <remarks>
+    /// The deserialization handler method should handle all possible exceptions.
+    /// 
+    /// If any exception happens during deserialization and is not handled, the program might crash or experience other issues.
+    /// </remarks>
+    [SuppressMessage("Microsoft.Naming", "CA1720:AvoidTypeNamesInParameters", MessageId = "0#")]
+    public delegate DockPane DeserializeDockPane(string persistString, IDockContent content, DockState visibleState, bool show);
+
     [LocalizedDescription("DockPanel_Description")]
     [Designer("System.Windows.Forms.Design.ControlDesigner, System.Design")]
     [ToolboxBitmap(typeof(resfinder), "WeifenLuo.WinFormsUI.Docking.DockPanel.bmp")]

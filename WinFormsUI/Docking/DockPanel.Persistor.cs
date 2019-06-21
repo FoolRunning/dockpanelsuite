@@ -98,6 +98,13 @@ namespace WeifenLuo.WinFormsUI.Docking
 
             private struct PaneStruct
             {
+                private string m_persistString;
+                public string PersistString
+                {
+                    get { return m_persistString; }
+                    set { m_persistString = value; }
+                }
+
                 private DockState m_dockState;
                 public DockState DockState
                 {
@@ -184,6 +191,13 @@ namespace WeifenLuo.WinFormsUI.Docking
 
             private struct FloatWindowStruct
             {
+                private string m_persistString;
+                public string PersistString
+                {
+                    get { return m_persistString; }
+                    set { m_persistString = value; }
+                }
+
                 private Rectangle m_bounds;
                 public Rectangle Bounds
                 {
@@ -279,6 +293,7 @@ namespace WeifenLuo.WinFormsUI.Docking
                 {
                     xmlOut.WriteStartElement("Pane");
                     xmlOut.WriteAttributeString("ID", dockPanel.Panes.IndexOf(pane).ToString(CultureInfo.InvariantCulture));
+                    xmlOut.WriteAttributeString("PersistString", pane.PersistString);
                     xmlOut.WriteAttributeString("DockState", pane.DockState.ToString());
                     xmlOut.WriteAttributeString("ActiveContent", dockPanel.Contents.IndexOf(pane.ActiveContent).ToString(CultureInfo.InvariantCulture));
                     xmlOut.WriteStartElement("Contents");
@@ -331,6 +346,7 @@ namespace WeifenLuo.WinFormsUI.Docking
                 {
                     xmlOut.WriteStartElement("FloatWindow");
                     xmlOut.WriteAttributeString("ID", dockPanel.FloatWindows.IndexOf(fw).ToString(CultureInfo.InvariantCulture));
+                    xmlOut.WriteAttributeString("PersistString", fw.PersistString);
                     Rectangle bounds = fw.WindowState == FormWindowState.Minimized ? fw.RestoreBounds : fw.Bounds;
                     xmlOut.WriteAttributeString("Bounds", rectConverter.ConvertToInvariantString(bounds));
                     xmlOut.WriteAttributeString("ZOrderIndex", fw.DockPanel.FloatWindows.IndexOf(fw).ToString(CultureInfo.InvariantCulture));
@@ -369,7 +385,7 @@ namespace WeifenLuo.WinFormsUI.Docking
                 {
                     try
                     {
-                        LoadFromXml(dockPanel, fs, deserializeContent, true);
+                        LoadFromXml(dockPanel, fs, deserializeContent, null, null, true);
                     }
                     finally
                     {
@@ -411,6 +427,7 @@ namespace WeifenLuo.WinFormsUI.Docking
                     if (xmlIn.Name != "Pane" || id != i)
                         throw new ArgumentException(Strings.DockPanel_LoadFromXml_InvalidXmlFormat);
 
+                    panes[i].PersistString = xmlIn.GetAttribute("PersistString");
                     panes[i].DockState = (DockState)dockStateConverter.ConvertFrom(xmlIn.GetAttribute("DockState"));
                     panes[i].IndexActiveContent = Convert.ToInt32(xmlIn.GetAttribute("ActiveContent"), CultureInfo.InvariantCulture);
                     panes[i].ZOrderIndex = -1;
@@ -485,6 +502,7 @@ namespace WeifenLuo.WinFormsUI.Docking
                     if (xmlIn.Name != "FloatWindow" || id != i)
                         throw new ArgumentException(Strings.DockPanel_LoadFromXml_InvalidXmlFormat);
 
+                    floatWindows[i].PersistString = xmlIn.GetAttribute("PersistString");
                     floatWindows[i].Bounds = (Rectangle)rectConverter.ConvertFromInvariantString(xmlIn.GetAttribute("Bounds"));
                     floatWindows[i].ZOrderIndex = Convert.ToInt32(xmlIn.GetAttribute("ZOrderIndex"), CultureInfo.InvariantCulture);
                     MoveToNextElement(xmlIn);
@@ -509,7 +527,9 @@ namespace WeifenLuo.WinFormsUI.Docking
                 return floatWindows;
             }
 
-            public static void LoadFromXml(DockPanel dockPanel, Stream stream, DeserializeDockContent deserializeContent, bool closeStream)
+            public static void LoadFromXml(DockPanel dockPanel, Stream stream, 
+                DeserializeDockContent deserializeContent, DeserializeDockPane deserializePane, 
+                DeserializeFloatWindow deserializeFloatWindow, bool closeStream)
             {
                 if (dockPanel.Contents.Count != 0)
                     throw new InvalidOperationException(Strings.DockPanel_LoadFromXml_AlreadyInitialized);
@@ -612,7 +632,12 @@ namespace WeifenLuo.WinFormsUI.Docking
                     {
                         IDockContent content = dockPanel.Contents[panes[i].IndexContents[j]];
                         if (j == 0)
-                            pane = dockPanel.Theme.Extender.DockPaneFactory.CreateDockPane(content, panes[i].DockState, false);
+                        {
+                            if (deserializePane == null)
+                                pane = dockPanel.Theme.Extender.DockPaneFactory.CreateDockPane(content, panes[i].DockState, false);
+                            else
+                                pane = deserializePane(panes[i].PersistString, content, panes[i].DockState, false);
+                        }
                         else if (panes[i].DockState == DockState.Float)
                             content.DockHandler.FloatPane = pane;
                         else
@@ -647,7 +672,12 @@ namespace WeifenLuo.WinFormsUI.Docking
                         int indexPane = floatWindows[i].NestedPanes[j].IndexPane;
                         DockPane pane = dockPanel.Panes[indexPane];
                         if (j == 0)
-                            fw = dockPanel.Theme.Extender.FloatWindowFactory.CreateFloatWindow(dockPanel, pane, floatWindows[i].Bounds);
+                        {
+                            if (deserializeFloatWindow == null)
+                                fw = dockPanel.Theme.Extender.FloatWindowFactory.CreateFloatWindow(dockPanel, pane, floatWindows[i].Bounds);
+                            else
+                                fw = deserializeFloatWindow(floatWindows[i].PersistString, dockPanel, pane, floatWindows[i].Bounds);
+                        }
                         else
                         {
                             int indexPrevPane = floatWindows[i].NestedPanes[j].IndexPrevPane;
@@ -792,13 +822,16 @@ namespace WeifenLuo.WinFormsUI.Docking
         /// </summary>
         /// <param name="stream">The stream.</param>
         /// <param name="deserializeContent">Deserialization handler.</param>
+        /// <param name="deserializePane">Deserialization handler.</param>
+        /// <param name="deserializeFloatWindow">Deserialization handler.</param>
         /// <exception cref="Exception">Deserialization might throw exceptions.</exception>
         /// <remarks>
         /// The stream is closed after deserialization.
         /// </remarks>
-        public void LoadFromXml(Stream stream, DeserializeDockContent deserializeContent)
+        public void LoadFromXml(Stream stream, DeserializeDockContent deserializeContent,
+            DeserializeDockPane deserializePane, DeserializeFloatWindow deserializeFloatWindow)
         {
-            Persistor.LoadFromXml(this, stream, deserializeContent, true);
+            Persistor.LoadFromXml(this, stream, deserializeContent, deserializePane, deserializeFloatWindow, true);
         }
 
         /// <summary>
@@ -810,7 +843,7 @@ namespace WeifenLuo.WinFormsUI.Docking
         /// <exception cref="Exception">Deserialization might throw exceptions.</exception>
         public void LoadFromXml(Stream stream, DeserializeDockContent deserializeContent, bool closeStream)
         {
-            Persistor.LoadFromXml(this, stream, deserializeContent, closeStream);
+            Persistor.LoadFromXml(this, stream, deserializeContent, null, null, closeStream);
         }
     }
 }

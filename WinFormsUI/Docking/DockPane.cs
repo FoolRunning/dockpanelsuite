@@ -262,6 +262,11 @@ namespace WeifenLuo.WinFormsUI.Docking
             get { return TabPageContextMenu != null; }
         }
 
+        public virtual string PersistString
+        {
+            get { return GetType().ToString(); }
+        }
+
         internal void ShowTabPageContextMenu(Control control, Point position)
         {
             object menu = TabPageContextMenu;

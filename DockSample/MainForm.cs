@@ -550,7 +550,7 @@ namespace DockSample
 
             Assembly assembly = Assembly.GetAssembly(typeof(MainForm));
             Stream xmlStream = assembly.GetManifestResourceStream("DockSample.Resources.DockPanel.xml");
-            dockPanel.LoadFromXml(xmlStream, m_deserializeDockContent);
+            dockPanel.LoadFromXml(xmlStream, m_deserializeDockContent, null, null);
             xmlStream.Close();
 
             dockPanel.ResumeLayout(true, true);

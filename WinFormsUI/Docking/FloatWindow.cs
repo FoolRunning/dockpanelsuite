@@ -120,6 +120,11 @@ namespace WeifenLuo.WinFormsUI.Docking
             get	{	return DockState == DockState.Float;	}
         }
 
+        public virtual string PersistString
+        {
+            get { return GetType().ToString(); }
+        }
+
         internal bool IsDockStateValid(DockState dockState)
         {
             foreach (DockPane pane in NestedPanes)
