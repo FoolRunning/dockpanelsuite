@@ -1061,7 +1061,7 @@ namespace WeifenLuo.WinFormsUI.Docking
         {
             if (DockHelper.IsDockStateAutoHide(DockState))
                 DockPanel.RefreshAutoHideStrip();
-            else if (Pane != null)
+            if (Pane != null)
             {
                 if (Pane.FloatWindow != null)
                     Pane.FloatWindow.SetText();
