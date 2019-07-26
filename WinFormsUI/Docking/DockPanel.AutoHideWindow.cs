@@ -102,7 +102,7 @@ namespace WeifenLuo.WinFormsUI.Docking
                 if (handler != null)
                     handler(this, e);
             }
-
+            
             private IDockContent m_activeContent = null;
             public IDockContent ActiveContent
             {
@@ -167,6 +167,13 @@ namespace WeifenLuo.WinFormsUI.Docking
             {
                 get { return m_animateTime; }
                 set { m_animateTime = value; }
+            }
+
+            private bool m_hideWhenMouseLeaves = true;
+            public bool HideWhenMouseLeaves
+            {
+                get { return m_hideWhenMouseLeaves; }
+                set { m_hideWhenMouseLeaves = value; }
             }
 
             private bool m_flagDragging = false;
@@ -396,7 +403,8 @@ namespace WeifenLuo.WinFormsUI.Docking
 
                 Rectangle rectTabStrip = DockPanel.GetTabStripRectangle(pane.DockState);
 
-                if (!ClientRectangle.Contains(ptMouseInAutoHideWindow) && !rectTabStrip.Contains(ptMouseInDockPanel))
+                if (!ClientRectangle.Contains(ptMouseInAutoHideWindow) && !rectTabStrip.Contains(ptMouseInDockPanel) &&
+                    HideWhenMouseLeaves)
                 {
                     ActiveContent = null;
                     m_timerMouseTrack.Enabled = false;
