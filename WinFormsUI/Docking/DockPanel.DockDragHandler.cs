@@ -451,10 +451,16 @@ namespace WeifenLuo.WinFormsUI.Docking
 
                 // Fire notification
                 DockPanel.OnDocumentDragged();
+
+                Outline = null;
+                Indicator = null;
             }
 
             private void TestDrop()
             {
+                if (Outline == null || Indicator == null || Indicator.IsDisposed)
+                    return;
+
                 Outline.FlagTestDrop = false;
 
                 Indicator.FullPanelEdge = ((Control.ModifierKeys & Keys.Shift) != 0);
