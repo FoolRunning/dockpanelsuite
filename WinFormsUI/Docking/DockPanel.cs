@@ -1211,14 +1211,23 @@ namespace WeifenLuo.WinFormsUI.Docking
             var old = m_autoHideWindow;
             m_autoHideWindow = Theme.Extender.AutoHideWindowFactory.CreateAutoHideWindow(this);
             m_autoHideWindow.Visible = false;
+            m_autoHideWindow.HandleDestroyed += AutoHideWindowDestroyed;
             SetAutoHideWindowParent();
 
             if (old != null)
             {
                 old.Visible = false;
+                old.HandleDestroyed -= AutoHideWindowDestroyed;
                 old.Parent = null;
                 old.Dispose();
             }
+        }
+
+        private void AutoHideWindowDestroyed(object sender, EventArgs args)
+        {
+            m_autoHideWindow.HandleDestroyed -= AutoHideWindowDestroyed;
+            m_autoHideWindow.Parent = null;
+            m_autoHideWindow = null;
         }
 
         private bool initializing;

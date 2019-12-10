@@ -42,11 +42,11 @@ namespace WeifenLuo.WinFormsUI.Docking
             get { return m_captionControl; }
         }
 
-        private DockPaneStripBase m_tabStripControl;
+        private WeakReference m_tabStripControl;
 
         public DockPaneStripBase TabStripControl
         {
-            get { return m_tabStripControl; }
+            get { return m_tabStripControl?.Target as DockPaneStripBase; }
         }
 
         internal protected DockPane(IDockContent content, DockState visibleState, bool show)
@@ -102,8 +102,8 @@ namespace WeifenLuo.WinFormsUI.Docking
             m_nestedDockingStatus = new NestedDockingStatus(this);
 
             m_captionControl = DockPanel.Theme.Extender.DockPaneCaptionFactory.CreateDockPaneCaption(this);
-            m_tabStripControl = DockPanel.Theme.Extender.DockPaneStripFactory.CreateDockPaneStrip(this);
-            Controls.AddRange(new Control[] { m_captionControl, m_tabStripControl });
+            m_tabStripControl = new WeakReference(DockPanel.Theme.Extender.DockPaneStripFactory.CreateDockPaneStrip(this));
+            Controls.AddRange(new Control[] { m_captionControl, TabStripControl });
 
             DockPanel.SuspendLayout(true);
             if (flagBounds)
@@ -153,14 +153,16 @@ namespace WeifenLuo.WinFormsUI.Docking
                 Splitter.Dispose();
                 if (m_autoHidePane != null)
                     m_autoHidePane.Dispose();
+
+                TabStripControl?.Dispose();
             }
             base.Dispose(disposing);
         }
 
-        private IDockContent m_activeContent = null;
+        private WeakReference m_activeContent = null;
         public virtual IDockContent ActiveContent
         {
-            get { return m_activeContent; }
+            get { return m_activeContent?.Target as IDockContent; }
             set
             {
                 if (ActiveContent == value)
@@ -177,26 +179,26 @@ namespace WeifenLuo.WinFormsUI.Docking
                         throw (new InvalidOperationException(Strings.DockPane_ActiveContent_InvalidValue));
                 }
 
-                IDockContent oldValue = m_activeContent;
+                IDockContent oldValue = m_activeContent?.Target as IDockContent;
 
                 if (DockPanel.ActiveAutoHideContent == oldValue)
                     DockPanel.ActiveAutoHideContent = null;
 
-                m_activeContent = value;
+                m_activeContent = new WeakReference(value);
 
                 if (DockPanel.DocumentStyle == DocumentStyle.DockingMdi && DockState == DockState.Document)
                 {
-                    if (m_activeContent != null)
-                        m_activeContent.DockHandler.Form.BringToFront();
+                    if (ActiveContent != null)
+                        ActiveContent.DockHandler.Form.BringToFront();
                 }
                 else
                 {
-                    if (m_activeContent != null)
-                        m_activeContent.DockHandler.SetVisible();
+                    if (ActiveContent != null)
+                        ActiveContent.DockHandler.SetVisible();
                     if (oldValue != null && DisplayingContents.Contains(oldValue))
                         oldValue.DockHandler.SetVisible();
-                    if (IsActivated && m_activeContent != null)
-                        m_activeContent.DockHandler.Activate();
+                    if (IsActivated && ActiveContent != null)
+                        ActiveContent.DockHandler.Activate();
                 }
 
                 if (FloatWindow != null)
@@ -209,7 +211,7 @@ namespace WeifenLuo.WinFormsUI.Docking
                     RefreshChanges();
 
                 if (m_activeContent != null)
-                    TabStripControl.EnsureTabVisible(m_activeContent);
+                    TabStripControl.EnsureTabVisible(ActiveContent);
             }
         }
 
