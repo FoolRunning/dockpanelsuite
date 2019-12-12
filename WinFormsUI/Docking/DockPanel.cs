@@ -714,7 +714,7 @@ namespace WeifenLuo.WinFormsUI.Docking
 
         protected override void OnLayout(LayoutEventArgs levent)
         {
-            if (Theme == null)
+            if (Theme == null || Disposing || IsDisposed)
             {
                 return;
             }

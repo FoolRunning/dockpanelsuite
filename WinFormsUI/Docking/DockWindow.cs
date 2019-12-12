@@ -129,6 +129,9 @@ namespace WeifenLuo.WinFormsUI.Docking
 
         protected override void OnLayout(LayoutEventArgs levent)
         {
+            if (Disposing || IsDisposed)
+                return;
+
             VisibleNestedPanes.Refresh();
             if (VisibleNestedPanes.Count == 0)
             {
