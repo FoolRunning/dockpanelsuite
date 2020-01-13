@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Security.Permissions;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace WeifenLuo.WinFormsUI.Docking
 {
@@ -607,7 +608,7 @@ namespace WeifenLuo.WinFormsUI.Docking
                 rectContent = DockPanel.RectangleToMdiClient(RectangleToScreen(rectContent));
 
             Rectangle rectInactive = new Rectangle(-rectContent.Width, rectContent.Y, rectContent.Width, rectContent.Height);
-            foreach (IDockContent content in Contents)
+            foreach (IDockContent content in Contents.ToList())
                 if (content.DockHandler.Pane == this)
                 {
                     if (content == ActiveContent)
